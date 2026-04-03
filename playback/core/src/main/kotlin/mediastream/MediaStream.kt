@@ -47,6 +47,7 @@ sealed interface MediaStreamTrack {
 
 data class MediaStreamAudioTrack(
 	override val codec: String,
+	val profile: String? = null,
 	val bitrate: Int,
 	val channels: Int,
 	val sampleRate: Int,
