@@ -17,6 +17,8 @@ import org.jellyfin.sdk.model.api.PlayMethod
 import org.jellyfin.sdk.model.api.PlaybackInfoDto
 import org.jellyfin.sdk.model.api.PlaybackInfoResponse
 
+import timber.log.Timber
+
 private fun createStreamInfo(
 	api: ApiClient,
 	options: VideoOptions,
@@ -34,27 +36,40 @@ private fun createStreamInfo(
 	if (source == null) return@apply
 
 	if (options.enableDirectPlay && source.supportsDirectPlay) {
-		playMethod = PlayMethod.DIRECT_PLAY
-		container = source.container
-		mediaUrl = when {
+		val url = when {
 			source.isRemote && source.path != null -> source.path
 			else -> api.videosApi.getVideoStreamUrl(
 				itemId = itemId,
-				container = container,
+				container = source.container,
 				mediaSourceId = source.id,
 				static = true,
 				tag = source.eTag,
 				liveStreamId = source.liveStreamId,
 			)
 		}
-	} else if (options.enableDirectStream && source.supportsDirectStream) {
-		playMethod = PlayMethod.DIRECT_STREAM
-		container = source.transcodingContainer
-		mediaUrl = api.createUrl(requireNotNull(source.transcodingUrl), ignorePathParameters = true)
-	} else if (source.supportsTranscoding) {
-		playMethod = PlayMethod.TRANSCODE
-		container = source.transcodingContainer
-		mediaUrl = api.createUrl(requireNotNull(source.transcodingUrl), ignorePathParameters = true)
+		if (url != null) {
+			playMethod = PlayMethod.DIRECT_PLAY
+			container = source.container
+			mediaUrl = url
+		}
+	}
+
+	if (mediaUrl == null && options.enableDirectStream && source.supportsDirectStream) {
+		val url = source.transcodingUrl?.let { api.createUrl(it, ignorePathParameters = true) }
+		if (url != null) {
+			playMethod = PlayMethod.DIRECT_STREAM
+			container = source.transcodingContainer
+			mediaUrl = url
+		}
+	}
+
+	if (mediaUrl == null && source.supportsTranscoding) {
+		val url = source.transcodingUrl?.let { api.createUrl(it, ignorePathParameters = true) }
+		if (url != null) {
+			playMethod = PlayMethod.TRANSCODE
+			container = source.transcodingContainer
+			mediaUrl = url
+		}
 	}
 }
 
@@ -69,7 +84,7 @@ class PlaybackManager(
 	) = lifecycleOwner.lifecycleScope.launch {
 		getVideoStreamInfoInternal(options, startTimeTicks).fold(
 			onSuccess = { callback.onResponse(it) },
-			onFailure = { callback.onError(Exception(it)) },
+			onFailure = { callback.onError(it as? Exception ?: Exception(it)) },
 		)
 	}
 
@@ -88,7 +103,7 @@ class PlaybackManager(
 
 		getVideoStreamInfoInternal(options, startTimeTicks).fold(
 			onSuccess = { callback.onResponse(it) },
-			onFailure = { callback.onError(Exception(it)) },
+			onFailure = { callback.onError(it as? Exception ?: Exception(it)) },
 		)
 	}
 
@@ -116,9 +131,7 @@ class PlaybackManager(
 		}
 
 		if (response.errorCode != null) {
-			throw PlaybackException().apply {
-				errorCode = response.errorCode!!
-			}
+			throw PlaybackException(response.errorCode!!)
 		}
 
 		createStreamInfo(api, options, response)

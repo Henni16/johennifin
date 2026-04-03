@@ -1,9 +1,18 @@
+import java.util.Properties
+
 plugins {
 	id("com.android.application")
 	kotlin("android")
 	alias(libs.plugins.kotlin.serialization)
 	alias(libs.plugins.kotlin.compose)
 	alias(libs.plugins.aboutlibraries)
+}
+
+val localProperties = Properties().apply {
+	val localPropertiesFile = rootProject.file("local.properties")
+	if (localPropertiesFile.exists()) {
+		localPropertiesFile.inputStream().use { load(it) }
+	}
 }
 
 android {
@@ -15,9 +24,18 @@ android {
 		targetSdk = libs.versions.android.targetSdk.get().toInt()
 
 		// Release version
-		applicationId = namespace
+		applicationId = "org.johennifin.androidtv"
 		versionName = project.getVersionName()
 		versionCode = getVersionCode(versionName!!)
+	}
+
+	signingConfigs {
+		create("release") {
+			storeFile = localProperties.getProperty("signing.storeFile")?.let { file(it) }
+			storePassword = localProperties.getProperty("signing.storePassword")
+			keyAlias = localProperties.getProperty("signing.keyAlias")
+			keyPassword = localProperties.getProperty("signing.keyPassword")
+		}
 	}
 
 	buildFeatures {
@@ -54,14 +72,16 @@ android {
 	buildTypes {
 		release {
 			isMinifyEnabled = false
+			signingConfig = signingConfigs.getByName("release")
+			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 
 			// Set package names used in various XML files
-			resValue("string", "app_id", namespace!!)
-			resValue("string", "app_search_suggest_authority", "${namespace}.content")
-			resValue("string", "app_search_suggest_intent_data", "content://${namespace}.content/intent")
+			resValue("string", "app_id", "org.johennifin.androidtv")
+			resValue("string", "app_search_suggest_authority", "org.johennifin.androidtv.content")
+			resValue("string", "app_search_suggest_intent_data", "content://org.johennifin.androidtv.content/intent")
 
 			// Set flavored application name
-			resValue("string", "app_name", "@string/app_name_release")
+			resValue("string", "app_name", "Johennifin")
 
 			buildConfigField("boolean", "DEVELOPMENT", "false")
 
@@ -72,13 +92,14 @@ android {
 			// Use different application id to run release and debug at the same time
 			applicationIdSuffix = ".debug"
 
+			val johennifinAppId = "org.johennifin.androidtv" + applicationIdSuffix
 			// Set package names used in various XML files
-			resValue("string", "app_id", namespace + applicationIdSuffix)
-			resValue("string", "app_search_suggest_authority", "${namespace + applicationIdSuffix}.content")
-			resValue("string", "app_search_suggest_intent_data", "content://${namespace + applicationIdSuffix}.content/intent")
+			resValue("string", "app_id", johennifinAppId)
+			resValue("string", "app_search_suggest_authority", "${johennifinAppId}.content")
+			resValue("string", "app_search_suggest_intent_data", "content://${johennifinAppId}.content/intent")
 
 			// Set flavored application name
-			resValue("string", "app_name", "@string/app_name_debug")
+			resValue("string", "app_name", "Johennifin (Debug)")
 
 			buildConfigField("boolean", "DEVELOPMENT", (defaultConfig.versionCode!! < 100).toString())
 		}

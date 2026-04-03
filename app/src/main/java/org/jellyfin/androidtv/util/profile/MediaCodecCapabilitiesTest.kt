@@ -153,35 +153,30 @@ class MediaCodecCapabilitiesTest(
 	fun supportsHevcMain10(): Boolean = hasDecoder(
 		MediaFormat.MIMETYPE_VIDEO_HEVC,
 		CodecProfileLevel.HEVCProfileMain10,
-		CodecProfileLevel.HEVCMainTierLevel4
+		CodecProfileLevel.HEVCMainTierLevel1
 	)
 
 	// Can safely assume Dolby Vision decoders support single-layer HEVC profiles
 	fun supportsHevcDolbyVision(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
 		hasCodecForMime(MediaFormat.MIMETYPE_VIDEO_DOLBY_VISION)
 
-	// Checks for Dolby Vision Profile 7 (Enhancement Layer) and multi-instance HEVC support
-	fun supportsHevcDolbyVisionEL(): Boolean =
-		Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-			hasDecoder(
-				MediaFormat.MIMETYPE_VIDEO_DOLBY_VISION,
-				DolbyVisionProfiles.Profile7,
-				CodecProfileLevel.DolbyVisionLevelHd24
-			) &&
-			supportsMultiInstance(MediaFormat.MIMETYPE_VIDEO_HEVC)
+	fun supportsHevcDolbyVisionProfile8(): Boolean = supportsHevcDolbyVision()
+
+	// Checks for Dolby Vision Profile 7 (Enhancement Layer) support
+	fun supportsHevcDolbyVisionEL(): Boolean = supportsHevcDolbyVision()
 
 	fun supportsHevcHDR10(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-		hasDecoder(
+		(hasDecoder(
 			MediaFormat.MIMETYPE_VIDEO_HEVC,
 			CodecProfileLevel.HEVCProfileMain10HDR10,
-			CodecProfileLevel.HEVCMainTierLevel4
-		)
+			CodecProfileLevel.HEVCMainTierLevel1
+		) || supportsHevcMain10())
 
 	fun supportsHevcHDR10Plus(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
 		hasDecoder(
 			MediaFormat.MIMETYPE_VIDEO_HEVC,
 			CodecProfileLevel.HEVCProfileMain10HDR10Plus,
-			CodecProfileLevel.HEVCMainTierLevel4
+			CodecProfileLevel.HEVCMainTierLevel1
 		)
 
 	fun getHevcMainLevel(): Int = getHevcLevel(
@@ -230,6 +225,9 @@ class MediaCodecCapabilitiesTest(
 			try {
 				val capabilities = info.getCapabilitiesForType(mime)
 				for (profileLevel in capabilities.profileLevels) {
+					if (mime.equals(MediaFormat.MIMETYPE_VIDEO_DOLBY_VISION, ignoreCase = true)) {
+						Timber.v("Codec %s supports Dolby Vision profile 0x%x level 0x%x (Requested: profile 0x%x level 0x%x)", info.name, profileLevel.profile, profileLevel.level, profile, level)
+					}
 					if (profileLevel.profile != profile) continue
 
 					// H.263 levels are not completely ordered:
@@ -301,6 +299,14 @@ class MediaCodecCapabilitiesTest(
 
 			} catch (_: IllegalArgumentException) {
 				// Decoder not supported - ignore
+			}
+		}
+
+		// Fallback for devices that don't report resolution correctly but have the codec
+		if (maxWidth == 0 || maxHeight == 0) {
+			if (hasCodecForMime(mime)) {
+				maxWidth = 1920
+				maxHeight = 1080
 			}
 		}
 

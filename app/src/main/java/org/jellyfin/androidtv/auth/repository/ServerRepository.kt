@@ -146,7 +146,7 @@ class ServerRepositoryImpl(
 			val id = systemInfo.id!!.toUUID()
 
 			val server = authenticationStore.getServer(id)?.copy(
-				name = systemInfo.serverName ?: "Jellyfin Server",
+				name = systemInfo.serverName ?: "JoHennifin Server",
 				address = chosenRecommendation.address,
 				version = systemInfo.version,
 				loginDisclaimer = branding.loginDisclaimer,
@@ -154,7 +154,7 @@ class ServerRepositoryImpl(
 				setupCompleted = systemInfo.startupWizardCompleted ?: true,
 				lastUsed = Instant.now().toEpochMilli()
 			) ?: AuthenticationStoreServer(
-				name = systemInfo.serverName ?: "Jellyfin Server",
+				name = systemInfo.serverName ?: "JoHennifin Server",
 				address = chosenRecommendation.address,
 				version = systemInfo.version,
 				loginDisclaimer = branding.loginDisclaimer,

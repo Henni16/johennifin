@@ -35,7 +35,16 @@ fun toFormat(stream: MediaStream, track: MediaStreamAudioTrack) = Format.Builder
 		f.setPcmEncoding(pcmEncoding)
 	} else {
 		f.setCodecs(track.codec)
-		f.setSampleMimeType(getFfmpegAudioMimeType(track.codec))
+		val mimeType = if (track.codec.equals("dts", ignoreCase = true) || track.codec.equals("dca", ignoreCase = true)) {
+			when {
+				track.profile?.contains("DTS:X", ignoreCase = true) == true -> MimeTypes.AUDIO_DTS_X
+				track.profile?.contains("DTS:HD", ignoreCase = true) == true -> MimeTypes.AUDIO_DTS_HD
+				else -> getFfmpegAudioMimeType(track.codec)
+			}
+		} else {
+			getFfmpegAudioMimeType(track.codec)
+		}
+		f.setSampleMimeType(mimeType)
 	}
 
 	f.setChannelCount(track.channels)

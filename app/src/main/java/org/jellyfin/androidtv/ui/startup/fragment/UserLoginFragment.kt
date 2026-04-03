@@ -75,7 +75,7 @@ class UserLoginFragment : Fragment() {
 			viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
 				// Update "connecting to ..." text and background
 				userLoginViewModel.server.onEach { server ->
-					val name = server?.name ?: "Jellyfin"
+					val name = server?.name ?: "JoHennifin"
 					binding.subtitle.text = getString(R.string.login_connect_to, name)
 
 					if (server != null) backgroundService.setBackground(server)
