@@ -217,7 +217,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
     public boolean isTranscoding() {
         // use or here so that true is the default since
         // this method is used to exclude features that may break unless we are sure playback is direct
-        return mCurrentStreamInfo == null || mCurrentStreamInfo.getPlayMethod() == PlayMethod.TRANSCODE;
+        return mCurrentStreamInfo == null || mCurrentStreamInfo.getPlayMethod() == null || mCurrentStreamInfo.getPlayMethod() == PlayMethod.TRANSCODE;
     }
 
     public boolean hasNextItem() {
@@ -436,7 +436,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
 
                 if (item == null) {
                     Timber.w("item is null - aborting play");
-                    Utils.showToast(mFragment.getContext(), mFragment.getString(R.string.msg_cannot_play));
+                    Utils.showToast(mFragment.getContext(), mFragment.getString(R.string.msg_cannot_play) + "\nItem is null");
                     mFragment.closePlayer();
                     return;
                 }
@@ -564,7 +564,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
                 @Override
                 public void onResponse(StreamInfo internalResponse) {
                     if (!isActive()) return;
-                    Timber.i("Internal player would %s", internalResponse.getPlayMethod().equals(PlayMethod.TRANSCODE) ? "transcode" : "direct stream");
+                    Timber.i("Internal player would %s", internalResponse.getPlayMethod() == PlayMethod.TRANSCODE ? "transcode" : "direct stream");
                     if (mVideoManager == null)
                         return;
                     mCurrentOptions = internalOptions;
@@ -578,6 +578,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
                     Timber.e(exception, "Unable to get stream info for internal player");
                     if (mVideoManager == null)
                         return;
+                    handlePlaybackInfoError(exception);
                 }
             });
         }
@@ -586,22 +587,24 @@ public class PlaybackController implements PlaybackControllerNotifiable {
     private void handlePlaybackInfoError(Exception exception) {
         Timber.e(exception, "Error getting playback stream info");
         if (mFragment == null) return;
+        
+        String errorMessage = mFragment.getString(R.string.msg_cannot_play);
         if (exception instanceof PlaybackException) {
             PlaybackException ex = (PlaybackException) exception;
             switch (ex.getErrorCode()) {
                 case NOT_ALLOWED:
-                    Utils.showToast(mFragment.getContext(), mFragment.getString(R.string.msg_playback_not_allowed));
+                    errorMessage = mFragment.getString(R.string.msg_playback_not_allowed);
                     break;
                 case NO_COMPATIBLE_STREAM:
-                    Utils.showToast(mFragment.getContext(), mFragment.getString(R.string.msg_playback_incompatible));
+                    errorMessage = mFragment.getString(R.string.msg_playback_incompatible);
                     break;
                 case RATE_LIMIT_EXCEEDED:
-                    Utils.showToast(mFragment.getContext(), mFragment.getString(R.string.msg_playback_restricted));
+                    errorMessage = mFragment.getString(R.string.msg_playback_restricted);
                     break;
             }
-        } else {
-            Utils.showToast(mFragment.getContext(), mFragment.getString(R.string.msg_cannot_play));
         }
+
+        Utils.showToast(mFragment.getContext(), errorMessage);
         if (mFragment != null) mFragment.closePlayer();
     }
 
@@ -624,7 +627,9 @@ public class PlaybackController implements PlaybackControllerNotifiable {
                 stop();
                 play(position, -1);
             } else {
-                handlePlaybackInfoError(null);
+                String method = response.getPlayMethod() != null ? response.getPlayMethod().toString() : "NONE";
+                String extraInfo = "Media URL is null. Method: " + method + " SourceId: " + response.getMediaSourceId();
+                handlePlaybackInfoError(new Exception(extraInfo));
             }
             return;
         }
@@ -1227,7 +1232,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
     }
 
     @Override
-    public void onError() {
+    public void onError(Throwable error) {
         if (mFragment == null) {
             playerErrorEncountered();
             return;
@@ -1237,8 +1242,8 @@ public class PlaybackController implements PlaybackControllerNotifiable {
             Utils.showToast(mFragment.getContext(), mFragment.getString(R.string.msg_error_live_stream));
             directStreamLiveTv = false;
         } else {
-            String msg = mFragment.getString(R.string.video_error_unknown_error);
-            Timber.e("Playback error - %s", msg);
+            Utils.showToast(mFragment.getContext(), mFragment.getString(R.string.video_error_unknown_error));
+            Timber.e(error, "Playback error");
         }
         playerErrorEncountered();
     }

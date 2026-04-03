@@ -58,6 +58,7 @@ private val isBaklava = Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA // 
 // HDR formats to label strings
 enum class HdrFormats(val label: String) {
 	DOLBY_VISION("Dolby Vision"),
+	DOLBY_VISION_PROFILE8("Dolby Vision Profile 8"),
 	DOLBY_VISION_EL("Dolby Vision Enhancement Layer"),
 	HDR10("HDR10"),
 	HDR10_PLUS("HDR10+"),
@@ -197,6 +198,7 @@ fun createDeviceProfileReport(
 				put(
 					Codec.Video.HEVC, mapOf(
 						HdrFormats.DOLBY_VISION to mediaTest.supportsHevcDolbyVision(),
+						HdrFormats.DOLBY_VISION_PROFILE8 to mediaTest.supportsHevcDolbyVisionProfile8(),
 						HdrFormats.DOLBY_VISION_EL to mediaTest.supportsHevcDolbyVisionEL(),
 						HdrFormats.HDR10 to mediaTest.supportsHevcHDR10(),
 						HdrFormats.HDR10_PLUS to mediaTest.supportsHevcHDR10Plus()

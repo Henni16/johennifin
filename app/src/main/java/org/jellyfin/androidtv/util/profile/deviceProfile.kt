@@ -45,6 +45,25 @@ private val supportedAudioCodecs = arrayOf(
 	Codec.Audio.VORBIS,
 )
 
+private val hlsMpegTsAudioCodecs = arrayOf(
+	Codec.Audio.AAC,
+	Codec.Audio.AC3,
+	Codec.Audio.EAC3,
+	Codec.Audio.MP3
+)
+
+private val hlsFmp4AudioCodecs = arrayOf(
+	Codec.Audio.AAC,
+	Codec.Audio.AC3,
+	Codec.Audio.EAC3,
+	Codec.Audio.MP3,
+	Codec.Audio.ALAC,
+	Codec.Audio.FLAC,
+	Codec.Audio.OPUS,
+	Codec.Audio.DTS,
+	Codec.Audio.TRUEHD
+)
+
 private fun UserPreferences.getMaxBitrate(): Int {
 	var maxBitrate = this[UserPreferences.maxBitrate].toFloatOrNull()
 
@@ -110,6 +129,7 @@ fun createDeviceProfile(
 
 	// HEVC
 	val supportsHevcDolbyVision = mediaTest.supportsHevcDolbyVision()
+	val supportsHevcDolbyVisionProfile8 = mediaTest.supportsHevcDolbyVisionProfile8()
 	val supportsHevcDolbyVisionEL = mediaTest.supportsHevcDolbyVisionEL()
 	val supportsHevcHDR10 = mediaTest.supportsHevcHDR10()
 	val supportsHevcHDR10Plus = mediaTest.supportsHevcHDR10Plus()
@@ -122,6 +142,11 @@ fun createDeviceProfile(
 
 	/// Transcoding profiles
 	// Video
+	val hlsVideoCodecs = listOfNotNull(
+		if (supportsHevc) Codec.Video.HEVC else null,
+		Codec.Video.H264
+	).toTypedArray()
+
 	transcodingProfile {
 		type = DlnaProfileType.VIDEO
 		context = EncodingContext.STREAMING
@@ -129,10 +154,22 @@ fun createDeviceProfile(
 		container = Codec.Container.TS
 		protocol = MediaStreamProtocol.HLS
 
-		if (supportsHevc) videoCodec(Codec.Video.HEVC)
-		videoCodec(Codec.Video.H264)
+		videoCodec(*hlsVideoCodecs)
+		audioCodec(*hlsMpegTsAudioCodecs.filter(allowedAudioCodecs::contains).toTypedArray())
 
-		audioCodec(*allowedAudioCodecs)
+		copyTimestamps = false
+		enableSubtitlesInManifest = true
+	}
+
+	transcodingProfile {
+		type = DlnaProfileType.VIDEO
+		context = EncodingContext.STREAMING
+
+		container = Codec.Container.MP4
+		protocol = MediaStreamProtocol.HLS
+
+		videoCodec(*hlsVideoCodecs)
+		audioCodec(*hlsFmp4AudioCodecs.filter(allowedAudioCodecs::contains).toTypedArray())
 
 		copyTimestamps = false
 		enableSubtitlesInManifest = true
@@ -390,7 +427,6 @@ fun createDeviceProfile(
 
 	/// HDR exclude list
 
-	// TODO Use VideoRangeType enum with Jellyfin 10.11 based SDK
 	val unsupportedRangeTypesAv1 = buildSet {
 		if (jellyfinTenEleven) add("DOVIInvalid")
 
@@ -407,26 +443,44 @@ fun createDeviceProfile(
 		}
 	}
 
-	// TODO Use VideoRangeType enum with Jellyfin 10.11 based SDK
 	val unsupportedRangeTypesHevc = buildSet {
-		if (jellyfinTenEleven) add("DOVIInvalid")
+		if (jellyfinTenEleven) {
+			add("DOVIInvalid")
 
-		if (!supportsHevcDolbyVisionEL) {
-			if (jellyfinTenEleven) {
+			if (!supportsHevcDolbyVisionEL) {
 				add("DOVIWithEL")
-				if (!supportsHevcHDR10Plus && !KnownDefects.hevcDoviHdr10PlusBug) add("DOVIWithELHDR10Plus")
+				add("DOVIWithELHDR10")
+				add("DOVIWithELHDR10Plus")
+				add("DOVIWithELHLG")
 			}
 
 			if (!supportsHevcDolbyVision) {
+				add(VideoRangeType.DOVI.serialName) // Profile 5
+				if (!supportsHevcHDR10) add(VideoRangeType.DOVI_WITH_HDR10.serialName) // Profile 8.1
+				if (!supportsHevcHDR10Plus && !KnownDefects.hevcDoviHdr10PlusBug) add("DOVIWithHDR10Plus") // Profile 8.4
+				add("DOVIWithHLG")
+			} else if (!supportsHevcDolbyVisionProfile8) {
+				add(VideoRangeType.DOVI_WITH_HDR10.serialName)
+				if (!supportsHevcHDR10Plus && !KnownDefects.hevcDoviHdr10PlusBug) add("DOVIWithHDR10Plus")
+				add("DOVIWithHLG")
+			} else if (!supportsHevcHDR10Plus && !KnownDefects.hevcDoviHdr10PlusBug) {
+				// Device supports DV Profile 8 but not HDR10+, so exclude the HDR10+ variant of Profile 8
+				add("DOVIWithHDR10Plus")
+			}
+		} else {
+			// Older server versions
+			if (!supportsHevcDolbyVision) {
 				add(VideoRangeType.DOVI.serialName)
 				if (!supportsHevcHDR10) add(VideoRangeType.DOVI_WITH_HDR10.serialName)
-				if (jellyfinTenEleven && !supportsHevcHDR10Plus && !KnownDefects.hevcDoviHdr10PlusBug) add("DOVIWithHDR10Plus")
 			}
 		}
 
 		if (!supportsHevcHDR10Plus) {
 			add(VideoRangeType.HDR10_PLUS.serialName)
-			if (!supportsHevcHDR10) add(VideoRangeType.HDR10.serialName)
+		}
+
+		if (!supportsHevcHDR10) {
+			add(VideoRangeType.HDR10.serialName)
 		}
 
 		if (jellyfinTenEleven && KnownDefects.hevcDoviHdr10PlusBug) {

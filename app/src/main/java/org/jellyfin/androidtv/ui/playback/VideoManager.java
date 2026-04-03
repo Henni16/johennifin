@@ -122,8 +122,8 @@ public class VideoManager {
         mExoPlayer.addListener(new Player.Listener() {
             @Override
             public void onPlayerError(@NonNull PlaybackException error) {
-                Timber.e("***** Got error from player");
-                if (mPlaybackControllerNotifiable != null) mPlaybackControllerNotifiable.onError();
+                Timber.e(error, "***** Got error from player");
+                if (mPlaybackControllerNotifiable != null) mPlaybackControllerNotifiable.onError(error);
                 stopProgressLoop();
             }
 

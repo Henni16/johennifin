@@ -28,6 +28,7 @@ fun MediaStream.getMediaStreamTrack() = when (type) {
 
 private fun getAudioTrack(stream: MediaStream) = MediaStreamAudioTrack(
 	codec = requireNotNull(stream.codec),
+	profile = stream.profile,
 	bitrate = stream.bitRate ?: 0,
 	channels = stream.channels ?: 1,
 	sampleRate = stream.sampleRate ?: 0,
