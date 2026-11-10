@@ -1,1 +1,1 @@
-TV-Client für Jellyfin, das freie Mediensystem
+JoHennifin, ein TV-Client für das freie Mediensystem Jellyfin

@@ -273,7 +273,7 @@
     <string name="server_field_empty">Das Adressfeld darf nicht leer sein</string>
     <string name="server_connection_failed">Verbindung zum Server konnte nicht hergestellt werden</string>
     <string name="server_connecting">Verbinden mit %1$s</string>
-    <string name="login_help_description">Jellyfin benötigt einen Server, mit dem eine Verbindung hergestellt werden kann. Besuche unsere Dokumentation unter docs.jellyfin.org oder scanne den QR-Code, um deine ersten Schritte mit Jellyfin zu machen.</string>
+    <string name="login_help_description">JoHennifin benötigt einen Jellyfin-Server. Die Anleitung zur Einrichtung findest du unter docs.jellyfin.org oder über den QR-Code.</string>
     <string name="login_help_title">Brauchst du Hilfe\?</string>
     <string name="connect_manually_by_address">Server-Adresse eingeben</string>
     <string name="discovered_servers_empty">Es wurden keine Server im lokalen Netzwerk gefunden.</string>
@@ -308,7 +308,7 @@
     <string name="user_picker_disable_title">Deaktivieren</string>
     <string name="auto_sign_in">Automatisch anmelden</string>
     <string name="lbl_switch_user">Konto wechseln</string>
-    <string name="no_network_permissions">Jellyfin benötigt zum Funktionieren Netzwerkberechtigungen</string>
+    <string name="no_network_permissions">JoHennifin benötigt zum Funktionieren Netzwerkberechtigungen</string>
     <string name="pref_theme_muted_purple">Gedämpftes Violett</string>
     <string name="press_to_close">Zum Schließen drücken</string>
     <string name="add_user">Konto hinzufügen</string>
@@ -316,7 +316,7 @@
     <string name="no_user_warning">Wir konnten keine Konten finden!
 \nFüge ein neues Konto hinzu, indem du auf die Schaltfläche \"Konto hinzufügen\" drückst.</string>
     <string name="welcome_content">Verbinde dich mit deinem Server, um loszulegen.</string>
-    <string name="welcome_title">Willkommen bei Jellyfin!</string>
+    <string name="welcome_title">Willkommen bei JoHennifin!</string>
     <string name="saved_servers">Gespeicherte Server</string>
     <string name="lbl_next_up_minimal">Ohne Vorschaubild</string>
     <string name="lbl_next_up_extended">Mit Vorschaubild</string>
@@ -354,10 +354,10 @@
     <string name="license_artifact">Artefakt</string>
     <string name="license_version">Version</string>
     <string name="license_description">Beschreibung</string>
-    <string name="licenses_link_description">Lizenzen der von der Jellyfin-App verwendeten Bibliotheken anzeigen</string>
+    <string name="licenses_link_description">Lizenzen der von JoHennifin verwendeten Bibliotheken anzeigen</string>
     <string name="licenses_link">Lizenzen</string>
     <string name="searchable_settings_description">Medien</string>
-    <string name="searchable_hint">Jellyfin durchsuchen</string>
+    <string name="searchable_hint">JoHennifin durchsuchen</string>
     <string name="home_section_i">Startseitenabschnitt %1$d</string>
     <string name="home_section_none">Keiner</string>
     <string name="home_section_livetv">Live-TV</string>
@@ -421,7 +421,7 @@
     <string name="live_tv_preferences">Fernseh-Optionen</string>
     <string name="pref_telemetry_category">Absturzbericht</string>
     <string name="server_unsupported_notification">Dieser Server verwendet Jellyfin-Version %1$s, die nicht unterstützt wird. Bitte aktualisiere auf Jellyfin %2$s oder neuer, um die App weiter nutzen zu können.</string>
-    <string name="app_notification_uimode_invalid">Diese App ist für Fernsehgeräte optimiert. Wir empfehlen die Verwendung unserer mobilen App auf anderen Geräten.</string>
+    <string name="app_notification_uimode_invalid">JoHennifin ist für Fernsehgeräte optimiert. Für andere Geräte empfehlen wir die mobile Jellyfin-App.</string>
     <string name="image_size_xlarge">Extragroß</string>
     <string name="image_size_smallest">Kleinste</string>
     <string name="image_type_poster">Poster</string>
@@ -440,7 +440,7 @@
     <string name="desc_audio_night_mode">Passt die Audiolautstärke automatisch an</string>
     <string name="pref_audio_night_mode">Audio-Nachtmodus (experimentell)</string>
     <string name="app_notification_beta">App auf %1$s aktualisiert
-\nVielen Dank für die Teilnahme am Jellyfin-Beta-Programm.</string>
+\nDanke, dass du die Betaversion von JoHennifin ausprobierst.</string>
     <string name="color_white">Weiß</string>
     <string name="color_black">Schwarz</string>
     <string name="color_darkgrey">Dunkelgrau</string>
@@ -475,7 +475,7 @@
         <item quantity="other">%1$s Minuten</item>
     </plurals>
     <string name="lbl_latest_in">Kürzlich in %1$s hinzugefügt</string>
-    <string name="pref_screensaver_inapp_enabled_description">Jellyfin-Bildschirmschoner zeigen, wenn die App geöffnet ist</string>
+    <string name="pref_screensaver_inapp_enabled_description">JoHennifin-Bildschirmschoner zeigen, wenn die App geöffnet ist</string>
     <string name="pref_screensaver_inapp_timeout">Bildschirmschoner starten nach</string>
     <plurals name="episodes">
         <item quantity="one">%1$s Folge</item>
@@ -677,7 +677,7 @@
     <string name="dovi_profile_8">Dolby Vision Profil 8</string>
     <string name="home_next_up_max_days_disabled">Ausgeschaltet</string>
     <string name="tv_provider_enabled">Integrieren mir Android TV home</string>
-    <string name="tv_provider_enabled_description">Zeige Jellyfin Kanäle und Empfehlungen auf dem Android TV Startbildschirm</string>
+    <string name="tv_provider_enabled_description">Kanäle und Empfehlungen von JoHennifin auf dem Android-TV-Startbildschirm anzeigen</string>
     <string name="dovi_profile_5_description">Einlagiges Dolby Vision</string>
     <string name="dovi_profile_7_description">Zweilagig mit Erwiterungsschicht</string>
     <string name="dovi_profile_8_description">Einlagig mit HDR10 Rückfall</string>
